@@ -1,0 +1,371 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		4547407D2F17D2B000941E85 /* TrackerLabs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4547407C2F17D2B000941E85 /* TrackerLabs.cpp */; };
+		454740822F17D2DE00941E85 /* TrackerLabsPiPL.r in Rez */ = {isa = PBXBuildFile; fileRef = 454740812F17D2DE00941E85 /* TrackerLabsPiPL.r */; };
+		454740862F17D8A600941E85 /* bundle.mm in Sources */ = {isa = PBXBuildFile; fileRef = 454740852F17D8A600941E85 /* bundle.mm */; };
+		45BC23B22EF057F40010F68D /* activation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45BC23B02EF057F40010F68D /* activation.cpp */; };
+		7EF36FD516F29A14002A3CB3 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7EF36FD416F29A14002A3CB3 /* Cocoa.framework */; };
+		C365BEA62DA6558F002EDC9E /* Smart_Utils.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C365BEA52DA6558F002EDC9E /* Smart_Utils.cpp */; };
+		C365BEB72DA6A2F9002EDC9E /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C365BEB62DA6A2F9002EDC9E /* OpenCL.framework */; };
+		C37A62522DBFE7A000AB4AB8 /* AEFX_SuiteHelper.c in Sources */ = {isa = PBXBuildFile; fileRef = C37A62512DBFE7A000AB4AB8 /* AEFX_SuiteHelper.c */; };
+		C37A62542DBFE7B500AB4AB8 /* AEGP_SuiteHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C37A62532DBFE7B500AB4AB8 /* AEGP_SuiteHandler.cpp */; };
+		C37A62562DBFE7C300AB4AB8 /* MissingSuiteError.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C37A62552DBFE7C300AB4AB8 /* MissingSuiteError.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C365BEC52DA7D4C1002EDC9E /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 7;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		4547407B2F17D2B000941E85 /* TrackerLabs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TrackerLabs.h; sourceTree = "<group>"; };
+		4547407C2F17D2B000941E85 /* TrackerLabs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TrackerLabs.cpp; sourceTree = "<group>"; };
+		454740812F17D2DE00941E85 /* TrackerLabsPiPL.r */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.rez; path = TrackerLabsPiPL.r; sourceTree = "<group>"; };
+		454740832F17D2EC00941E85 /* TrackerLabs.plugin-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TrackerLabs.plugin-Info.plist"; sourceTree = "<group>"; };
+		454740842F17D8A600941E85 /* bundle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = bundle.h; sourceTree = "<group>"; };
+		454740852F17D8A600941E85 /* bundle.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = bundle.mm; sourceTree = "<group>"; };
+		45BC23B02EF057F40010F68D /* activation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = activation.cpp; sourceTree = "<group>"; };
+		45BC23B12EF057F40010F68D /* activation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = activation.h; sourceTree = "<group>"; };
+		45BC23B32EF058050010F68D /* httplib.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = httplib.h; sourceTree = "<group>"; };
+		7EF36FD416F29A14002A3CB3 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		C365BE9E2DA654AD002EDC9E /* AE_Effect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AE_Effect.h; path = ../Headers/AE_Effect.h; sourceTree = SOURCE_ROOT; };
+		C365BE9F2DA654E5002EDC9E /* AE_PluginData.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AE_PluginData.h; path = ../Headers/AE_PluginData.h; sourceTree = SOURCE_ROOT; };
+		C365BEA02DA6550D002EDC9E /* AEFX_SuiteHandlerTemplate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AEFX_SuiteHandlerTemplate.h; path = ../Headers/AEFX_SuiteHandlerTemplate.h; sourceTree = SOURCE_ROOT; };
+		C365BEA12DA6552F002EDC9E /* PrSDKAESupport.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PrSDKAESupport.h; path = ../Headers/PrSDKAESupport.h; sourceTree = SOURCE_ROOT; };
+		C365BEA22DA6552F002EDC9E /* PrSDKPixelFormat.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PrSDKPixelFormat.h; path = ../Headers/PrSDKPixelFormat.h; sourceTree = SOURCE_ROOT; };
+		C365BEA32DA65573002EDC9E /* entry.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = entry.h; path = ../Util/entry.h; sourceTree = SOURCE_ROOT; };
+		C365BEA42DA6558F002EDC9E /* Smart_Utils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = Smart_Utils.h; path = ../Util/Smart_Utils.h; sourceTree = SOURCE_ROOT; };
+		C365BEA52DA6558F002EDC9E /* Smart_Utils.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = Smart_Utils.cpp; path = ../Util/Smart_Utils.cpp; sourceTree = SOURCE_ROOT; };
+		C365BEB62DA6A2F9002EDC9E /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
+		C37A62512DBFE7A000AB4AB8 /* AEFX_SuiteHelper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = AEFX_SuiteHelper.c; path = ../Util/AEFX_SuiteHelper.c; sourceTree = SOURCE_ROOT; };
+		C37A62532DBFE7B500AB4AB8 /* AEGP_SuiteHandler.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = AEGP_SuiteHandler.cpp; path = ../Util/AEGP_SuiteHandler.cpp; sourceTree = SOURCE_ROOT; };
+		C37A62552DBFE7C300AB4AB8 /* MissingSuiteError.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = MissingSuiteError.cpp; path = ../Util/MissingSuiteError.cpp; sourceTree = SOURCE_ROOT; };
+		C4E618CC095A3CE80012CA3F /* TrackerLabs.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrackerLabs.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		C4E618CA095A3CE80012CA3F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C365BEB72DA6A2F9002EDC9E /* OpenCL.framework in Frameworks */,
+				7EF36FD516F29A14002A3CB3 /* Cocoa.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		25F5A63F0B2A1D4C00D969DF /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				454740832F17D2EC00941E85 /* TrackerLabs.plugin-Info.plist */,
+				454740812F17D2DE00941E85 /* TrackerLabsPiPL.r */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		C365BEB52DA6A2F9002EDC9E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C365BEB62DA6A2F9002EDC9E /* OpenCL.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		C4E6187C095A3C800012CA3F = {
+			isa = PBXGroup;
+			children = (
+				454740842F17D8A600941E85 /* bundle.h */,
+				454740852F17D8A600941E85 /* bundle.mm */,
+				4547407C2F17D2B000941E85 /* TrackerLabs.cpp */,
+				4547407B2F17D2B000941E85 /* TrackerLabs.h */,
+				45BC23B32EF058050010F68D /* httplib.h */,
+				45BC23B02EF057F40010F68D /* activation.cpp */,
+				45BC23B12EF057F40010F68D /* activation.h */,
+				25F5A63F0B2A1D4C00D969DF /* Resources */,
+				D0FE57630993C4FD00139A60 /* Supporting Code */,
+				7EF36FD416F29A14002A3CB3 /* Cocoa.framework */,
+				C365BEB52DA6A2F9002EDC9E /* Frameworks */,
+				C4E6188C095A3C800012CA3F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		C4E6188C095A3C800012CA3F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C4E618CC095A3CE80012CA3F /* TrackerLabs.plugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		D0FE57630993C4FD00139A60 /* Supporting Code */ = {
+			isa = PBXGroup;
+			children = (
+				C37A62552DBFE7C300AB4AB8 /* MissingSuiteError.cpp */,
+				C37A62532DBFE7B500AB4AB8 /* AEGP_SuiteHandler.cpp */,
+				C37A62512DBFE7A000AB4AB8 /* AEFX_SuiteHelper.c */,
+				C365BEA42DA6558F002EDC9E /* Smart_Utils.h */,
+				C365BEA52DA6558F002EDC9E /* Smart_Utils.cpp */,
+				C365BEA32DA65573002EDC9E /* entry.h */,
+				C365BEA12DA6552F002EDC9E /* PrSDKAESupport.h */,
+				C365BEA22DA6552F002EDC9E /* PrSDKPixelFormat.h */,
+				C365BEA02DA6550D002EDC9E /* AEFX_SuiteHandlerTemplate.h */,
+				C365BE9F2DA654E5002EDC9E /* AE_PluginData.h */,
+				C365BE9E2DA654AD002EDC9E /* AE_Effect.h */,
+			);
+			name = "Supporting Code";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		C4E618CB095A3CE80012CA3F /* TrackerLabs */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C4E618CE095A3CE90012CA3F /* Build configuration list for PBXNativeTarget "TrackerLabs" */;
+			buildPhases = (
+				C4E618C9095A3CE80012CA3F /* Sources */,
+				C4E618CA095A3CE80012CA3F /* Frameworks */,
+				C4E618EA095A3E040012CA3F /* Rez */,
+				C365BEC52DA7D4C1002EDC9E /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TrackerLabs;
+			productName = MotionBlur.plugin;
+			productReference = C4E618CC095A3CE80012CA3F /* TrackerLabs.plugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C4E6187E095A3C800012CA3F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0720;
+				TargetAttributes = {
+					C4E618CB095A3CE80012CA3F = {
+						DevelopmentTeam = TFQ3XTTVJC;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = C4E6187F095A3C800012CA3F /* Build configuration list for PBXProject "TrackerLabs" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				English,
+				en,
+			);
+			mainGroup = C4E6187C095A3C800012CA3F;
+			productRefGroup = C4E6188C095A3C800012CA3F /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				C4E618CB095A3CE80012CA3F /* TrackerLabs */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXRezBuildPhase section */
+		C4E618EA095A3E040012CA3F /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				454740822F17D2DE00941E85 /* TrackerLabsPiPL.r in Rez */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		C4E618C9095A3CE80012CA3F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4547407D2F17D2B000941E85 /* TrackerLabs.cpp in Sources */,
+				C37A62542DBFE7B500AB4AB8 /* AEGP_SuiteHandler.cpp in Sources */,
+				45BC23B22EF057F40010F68D /* activation.cpp in Sources */,
+				454740862F17D8A600941E85 /* bundle.mm in Sources */,
+				C37A62522DBFE7A000AB4AB8 /* AEFX_SuiteHelper.c in Sources */,
+				C365BEA62DA6558F002EDC9E /* Smart_Utils.cpp in Sources */,
+				C37A62562DBFE7C300AB4AB8 /* MissingSuiteError.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		C365BEBB2DA7C9CA002EDC9E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
+				GCC_MODEL_TUNING = "";
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				GCC_REUSE_STRINGS = NO;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../Headers,
+					"../Util/**",
+					"../Headers/SP/**",
+					"../Resources/**",
+				);
+				NEW_SETTING = "";
+				ONLY_ACTIVE_ARCH = YES;
+				REZ_PREPROCESSOR_DEFINITIONS = __MACH__;
+				SDKROOT = macosx;
+				STRIP_INSTALLED_PRODUCT = NO;
+				WRAPPER_EXTENSION = plugin;
+			};
+			name = Release;
+		};
+		C365BEBC2DA7C9CA002EDC9E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = TFQ3XTTVJC;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G5;
+				GENERATE_PKGINFO_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					../Headers,
+					../Util,
+					../Headers/SP,
+					../Resources,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/TrackerLabs.plugin-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.AfterEffects.TrackerLabs;
+				PRODUCT_NAME = TrackerLabs;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				ZERO_LINK = NO;
+			};
+			name = Release;
+		};
+		C4E61880095A3C800012CA3F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
+				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
+				GCC_MODEL_TUNING = "";
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/Cocoa.framework/Headers/Cocoa.h";
+				GCC_REUSE_STRINGS = NO;
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				GCC_THREADSAFE_STATICS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
+				GCC_WARN_MISSING_PARENTHESES = YES;
+				GCC_WARN_SHADOW = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_LABEL = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					../Headers,
+					"../Util/**",
+					"../Headers/SP/**",
+					"../Resources/**",
+				);
+				NEW_SETTING = "";
+				ONLY_ACTIVE_ARCH = YES;
+				REZ_PREPROCESSOR_DEFINITIONS = __MACH__;
+				SDKROOT = macosx;
+				STRIP_INSTALLED_PRODUCT = NO;
+				WRAPPER_EXTENSION = plugin;
+			};
+			name = Debug;
+		};
+		C4E618CF095A3CE90012CA3F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = TFQ3XTTVJC;
+				GCC_MODEL_TUNING = G5;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GENERATE_PKGINFO_FILE = YES;
+				HEADER_SEARCH_PATHS = (
+					../Headers,
+					../Util,
+					../Headers/SP,
+					../Resources,
+				);
+				INFOPLIST_FILE = "$(SRCROOT)/TrackerLabs.plugin-Info.plist";
+				INSTALL_PATH = "$(HOME)/Library/Bundles";
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = com.adobe.AfterEffects.TrackerLabs;
+				PRODUCT_NAME = TrackerLabs;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				ZERO_LINK = NO;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		C4E6187F095A3C800012CA3F /* Build configuration list for PBXProject "TrackerLabs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C4E61880095A3C800012CA3F /* Debug */,
+				C365BEBB2DA7C9CA002EDC9E /* Release */,
+			);
+			defaultConfigurationIsVisible = 1;
+			defaultConfigurationName = Release;
+		};
+		C4E618CE095A3CE90012CA3F /* Build configuration list for PBXNativeTarget "TrackerLabs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C4E618CF095A3CE90012CA3F /* Debug */,
+				C365BEBC2DA7C9CA002EDC9E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C4E6187E095A3C800012CA3F /* Project object */;
+}

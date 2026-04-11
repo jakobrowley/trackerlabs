@@ -1,0 +1,5 @@
+#!/bin/bash
+if test -d "/Library/OFX/Plugins/TrackerLabsPlugin.ofx.bundle"; then
+  sudo rm -rf "/Library/OFX/Plugins/TrackerLabsPlugin.ofx.bundle"
+fi
+exit 0

@@ -1,0 +1,61 @@
+# macOS
+.DS_Store
+__MACOSX/
+
+# IDE / editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Sentry secrets — never commit
+sentry-secrets.md
+.env
+.env.local
+
+# Xcode build outputs
+**/build/
+**/DerivedData/
+**/*.xcuserdatad/
+**/xcuserdata/
+**/*.xcodeproj/project.xcworkspace/xcuserdata/
+
+# Visual Studio build outputs
+**/.vs/
+**/x64/
+**/Win32/
+**/Debug/
+**/Release/
+**/ipch/
+**/*.suo
+**/*.user
+**/*.sdf
+**/*.opensdf
+**/*.VC.db
+**/*.VC.opendb
+
+# C++ compiled / intermediate
+**/*.o
+**/*.obj
+**/*.lib
+**/*.a
+**/*.exp
+**/*.ilk
+**/*.pdb
+**/*.idb
+**/*.tlog
+
+# Plugin binaries (built from source — exclude)
+**/*.aex
+**/*.ofx
+**/*.plugin/
+**/*.bundle/
+**/*.dSYM/
+
+# Installer payloads
+**/installer/Payload/
+**/installer/*.pkg
+
+# Logs
+*.log
+logs/

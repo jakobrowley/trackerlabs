@@ -1,0 +1,15 @@
+#!/bin/bash
+USERNAME=$(stat -f%Su /dev/console)
+USER_HOME=$(dscl . -read /Users/$USERNAME NFSHomeDirectory | awk '{print $2}')
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.5 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.6 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.7 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.8 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.9 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.10 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.11 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.12 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.13 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.14 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.15 PlayerDebugMode -int 1
+sudo -u "$USERNAME" defaults write com.adobe.CSXS.16 PlayerDebugMode -int 1
