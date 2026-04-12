@@ -106,9 +106,8 @@ Create `src/sentry_integration.cpp` in each TrackerLabs variant's source tree:
 #include <string>
 
 #ifdef __APPLE__
-#include <mach-o/dyld.h>
+#include <dlfcn.h>
 #include <libgen.h>
-#include <unistd.h>
 #endif
 
 #ifdef _WIN32
@@ -118,19 +117,49 @@ Create `src/sentry_integration.cpp` in each TrackerLabs variant's source tree:
 namespace {
   bool g_sentry_initialized = false;
 
+  // Returns the directory containing THIS PLUGIN's binary, not the host app's
+  // (After Effects / DaVinci Resolve). This is critical because Crashpad needs
+  // to find `crashpad_handler` in the same directory as the plugin, not next
+  // to the host app.
+  //
+  // Note: this was originally written with _NSGetExecutablePath / GetModuleFileNameA(NULL, ...)
+  // which is wrong — those return the HOST app's path. Sentry Seer caught this
+  // during PR review. The correct approach uses dladdr (Mac) and
+  // GetModuleHandleEx with GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS (Win),
+  // passing a function pointer from our own module so the OS resolves to our
+  // own DLL/dylib instead of the host process's executable.
   std::string get_plugin_dir() {
 #ifdef __APPLE__
-    char path[1024];
-    uint32_t size = sizeof(path);
-    if (_NSGetExecutablePath(path, &size) == 0) {
-      return std::string(dirname(path));
+    // dladdr looks up the shared library that contains the given symbol.
+    // Passing a pointer to a function in our own plugin resolves to our
+    // plugin's dylib path, not the host app.
+    Dl_info info;
+    if (dladdr(reinterpret_cast<void*>(&get_plugin_dir), &info) != 0 && info.dli_fname) {
+      // Make a mutable copy because dirname() may modify its argument.
+      char path_copy[1024];
+      strncpy(path_copy, info.dli_fname, sizeof(path_copy) - 1);
+      path_copy[sizeof(path_copy) - 1] = '\0';
+      return std::string(dirname(path_copy));
     }
     return "/tmp";
 #elif defined(_WIN32)
-    char path[MAX_PATH];
-    GetModuleFileNameA(NULL, path, MAX_PATH);
-    std::string full(path);
-    return full.substr(0, full.find_last_of("\\/"));
+    // GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS with a function pointer from
+    // THIS module resolves to our plugin's DLL, not the host's .exe.
+    // GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT prevents ref-count changes.
+    HMODULE hModule = NULL;
+    if (GetModuleHandleExW(
+            GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+            reinterpret_cast<LPCWSTR>(&get_plugin_dir),
+            &hModule)) {
+      wchar_t wpath[MAX_PATH];
+      if (GetModuleFileNameW(hModule, wpath, MAX_PATH) > 0) {
+        // Convert wide string to narrow — simplified; in production use WideCharToMultiByte
+        std::wstring ws(wpath);
+        std::string path(ws.begin(), ws.end());
+        return path.substr(0, path.find_last_of("\\/"));
+      }
+    }
+    return "C:\\Temp";
 #else
     return "/tmp";
 #endif
