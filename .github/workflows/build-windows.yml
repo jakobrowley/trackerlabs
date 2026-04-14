@@ -1,0 +1,114 @@
+name: Build Windows Plugins
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-ae-windows:
+    name: Build AE Plugin (Windows x64)
+    runs-on: windows-2019
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Create AE build output directory
+        run: New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\ae-build-output"
+        shell: pwsh
+
+      - name: Build TrackerLabs AE plugin
+        run: |
+          msbuild `
+            "$env:GITHUB_WORKSPACE\TrackerLabs_AEX_WIN\TrackerLabs\src\Win\TrackerLabs.sln" `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /p:AE_PLUGIN_BUILD_DIR="$env:GITHUB_WORKSPACE\ae-build-output" `
+            /m `
+            /v:minimal
+        shell: pwsh
+
+      - name: Locate .aex output
+        run: |
+          $aex = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\ae-build-output" -Filter "*.aex" -Recurse | Select-Object -First 1
+          if (-not $aex) {
+            Write-Error "No .aex file found in build output directory"
+            exit 1
+          }
+          Write-Host "Found: $($aex.FullName)"
+          Add-Content -Path $env:GITHUB_ENV -Value "AEX_PATH=$($aex.FullName)"
+        shell: pwsh
+
+      - name: Upload TrackerLabs.aex artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrackerLabs-AE-Windows-x64
+          path: ${{ env.AEX_PATH }}
+          if-no-files-found: error
+
+  build-resolve-windows:
+    name: Build Resolve OFX Plugin (Windows x64)
+    runs-on: windows-2019
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Locate CUDA toolkit and set env vars
+        run: |
+          $cudaPath = $env:CUDA_PATH
+          if (-not $cudaPath) {
+            $candidates = Get-Item "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*" -ErrorAction SilentlyContinue
+            if ($candidates) {
+              $cudaPath = ($candidates | Sort-Object Name | Select-Object -Last 1).FullName
+            }
+          }
+          if ($cudaPath) {
+            Write-Host "CUDA found at: $cudaPath"
+            Add-Content -Path $env:GITHUB_ENV -Value "CUDA_INC_PATH=$cudaPath\include"
+            Add-Content -Path $env:GITHUB_ENV -Value "CUDA_LIB_PATH=$cudaPath\lib\x64"
+          } else {
+            Write-Host "WARNING: CUDA not found — build may fail if CUDA compilation is required"
+          }
+          # Point AMDAPPSDKROOT to bundled opencl/ directory (inc/ and lib/ are present in source tree)
+          $oclRoot = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win\TrackerLabsResolvePlugin\opencl"
+          Write-Host "OpenCL root: $oclRoot"
+          Add-Content -Path $env:GITHUB_ENV -Value "AMDAPPSDKROOT=$oclRoot"
+        shell: pwsh
+
+      - name: Build TrackerLabs Resolve OFX plugin
+        run: |
+          msbuild `
+            "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win\TrackerLabsResolvePlugin\src\TrackerLabsResolvePlugin.sln" `
+            /p:Configuration=Release `
+            /p:Platform=x64 `
+            /m `
+            /v:minimal
+        shell: pwsh
+
+      - name: Locate .ofx.bundle output
+        run: |
+          $searchRoot = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win"
+          $bundle = Get-ChildItem -Path $searchRoot -Filter "*.ofx.bundle" -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $bundle) {
+            Write-Error "No .ofx.bundle directory found under $searchRoot"
+            exit 1
+          }
+          Write-Host "Found bundle: $($bundle.FullName)"
+          Add-Content -Path $env:GITHUB_ENV -Value "OFX_BUNDLE_PATH=$($bundle.FullName)"
+        shell: pwsh
+
+      - name: Upload TrackerLabsPlugin.ofx.bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TrackerLabs-Resolve-Windows-x64
+          path: ${{ env.OFX_BUNDLE_PATH }}
+          if-no-files-found: error
