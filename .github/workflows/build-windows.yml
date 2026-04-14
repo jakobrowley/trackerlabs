@@ -9,7 +9,7 @@ on:
 jobs:
   build-ae-windows:
     name: Build AE Plugin (Windows x64)
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -53,7 +53,7 @@ jobs:
 
   build-resolve-windows:
     name: Build Resolve OFX Plugin (Windows x64)
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
