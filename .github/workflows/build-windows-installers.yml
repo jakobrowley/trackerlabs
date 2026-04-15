@@ -2,205 +2,141 @@ name: Build Windows Installers
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - '.github/workflows/build-windows-installers.yml'
 
 jobs:
-  build-msi-installers:
-    name: Build Windows .msi Installers
+  build-zip-installers:
+    name: Build Windows .zip Installers
     runs-on: windows-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install WiX Toolset
+      - name: Download all plugin assets
         run: |
-          dotnet tool install --global wix --version 5.0.2
-          wix extension add WixToolset.UI.wixext/5.0.2 -g
-        shell: pwsh
-
-      - name: Download FastFX ZXP
-        run: |
-          $tag = "v2.0.0-new-license"
-          $assets = gh release view $tag --repo jakobrowley/fastfx --json assets --jq '.assets[] | select(.name | endswith(".zxp")) | .url'
-          $url = $assets | Select-Object -First 1
-          if (-not $url) { $url = (gh release view $tag --repo jakobrowley/fastfx --json assets --jq '.assets[-1].url') }
+          # FastFX
           New-Item -ItemType Directory -Force -Path fastfx
-          gh release download $tag --repo jakobrowley/fastfx --pattern "*.zxp" --dir fastfx
+          gh release download v2.0.0-new-license --repo jakobrowley/fastfx --pattern "*.zxp" --dir fastfx
           $zxp = Get-ChildItem fastfx -Filter "*.zxp" | Select-Object -First 1
-          if ($zxp) {
-            Expand-Archive -Path $zxp.FullName -DestinationPath fastfx/contents -Force
-            Write-Host "FastFX extracted to fastfx/contents"
-          }
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Download Surveillance ZXP
-        run: |
+          if ($zxp) { Expand-Archive -Path $zxp.FullName -DestinationPath fastfx_contents -Force }
+          
+          # Surveillance
           New-Item -ItemType Directory -Force -Path surveillance
           gh release download v1.0.0-new-license --repo jakobrowley/surveillance --pattern "*.zxp" --dir surveillance
           $zxp = Get-ChildItem surveillance -Filter "*.zxp" | Select-Object -First 1
-          if ($zxp) { Expand-Archive -Path $zxp.FullName -DestinationPath surveillance/contents -Force }
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Download Terminal ZXP
-        run: |
+          if ($zxp) { Expand-Archive -Path $zxp.FullName -DestinationPath surveillance_contents -Force }
+          
+          # Terminal
           New-Item -ItemType Directory -Force -Path terminal
           gh release download v1.0.0-new-license --repo jakobrowley/terminal --pattern "*.zxp" --dir terminal
           $zxp = Get-ChildItem terminal -Filter "*.zxp" | Select-Object -First 1
-          if ($zxp) { Expand-Archive -Path $zxp.FullName -DestinationPath terminal/contents -Force }
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Download TrackerLabs AE
-        run: |
-          New-Item -ItemType Directory -Force -Path trackerlabs-ae
-          gh release download v1.0.0-new-license --repo jakobrowley/trackerlabs --pattern "TrackerLabs-AE-Win*" --dir trackerlabs-ae
-          gh release download v1.0.0-new-license --repo jakobrowley/trackerlabs --pattern "TrackerLabs.aex" --dir trackerlabs-ae
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Download TrackerLabs Resolve
-        run: |
-          New-Item -ItemType Directory -Force -Path trackerlabs-resolve
-          gh release download v1.0.0-new-license --repo jakobrowley/trackerlabs --pattern "TrackerLabs-Resolve-Win*" --dir trackerlabs-resolve
-          $zip = Get-ChildItem trackerlabs-resolve -Filter "*.zip" | Select-Object -First 1
-          if ($zip) { Expand-Archive -Path $zip.FullName -DestinationPath trackerlabs-resolve/contents -Force }
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ github.token }}
-
-      - name: Build FastFX MSI
-        run: |
-          $installDir = "$env:APPDATA\Adobe\CEP\extensions\fastfx"
-          $srcDir = "fastfx\contents"
-          if (-not (Test-Path $srcDir)) { Write-Host "SKIP: FastFX source not found"; exit 0 }
+          if ($zxp) { Expand-Archive -Path $zxp.FullName -DestinationPath terminal_contents -Force }
           
-          # Create WiX source
-          # Use heat to harvest files
-          wix build -o FastFX-Win-Setup.msi -ext WixToolset.UI.wixext -d SourceDir="$PWD\$srcDir" -d ProductName="FastFX" -d InstallFolder="fastfx" -src - <<'WXS'
-          # WiX v5 doesn't support stdin easily, use a file instead
-          
-          # Actually, WiX v5 CLI is different. Let me use a simpler approach with wix build
+          # TrackerLabs
+          New-Item -ItemType Directory -Force -Path trackerlabs
+          gh release download v1.0.0-new-license --repo jakobrowley/trackerlabs --pattern "TrackerLabs.aex" --dir trackerlabs 2>$null
+          gh release download v1.0.0-new-license --repo jakobrowley/trackerlabs --pattern "TrackerLabs-Resolve-Win*" --dir trackerlabs 2>$null
+          $zip = Get-ChildItem trackerlabs -Filter "*Resolve*Win*.zip" | Select-Object -First 1
+          if ($zip) { Expand-Archive -Path $zip.FullName -DestinationPath trackerlabs_resolve -Force }
         shell: pwsh
-        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
 
-      - name: Build all MSI installers with PowerShell
+      - name: Build zip installers
         run: |
-          # WiX v5 CLI changed significantly. Use the simpler dotnet tool approach.
-          # Actually, let's use a much simpler approach: create self-extracting ZIPs
-          # that auto-install to the right location using a PowerShell script.
-          #
-          # Even better: create .zip files with an install.bat that copies to the right place.
-          # This is the most reliable and won't trigger antivirus.
+          New-Item -ItemType Directory -Force -Path output
           
           $plugins = @(
-            @{ Name="FastFX"; Source="fastfx\contents"; Target='%APPDATA%\Adobe\CEP\extensions\fastfx' },
-            @{ Name="Surveillance"; Source="surveillance\contents"; Target='%APPDATA%\Adobe\CEP\extensions\Surveillance' },
-            @{ Name="Terminal"; Source="terminal\contents"; Target='%APPDATA%\Adobe\CEP\extensions\com.example.terminal.panel' }
+            @{ Name="FastFX"; Src="fastfx_contents"; Dest='%APPDATA%\Adobe\CEP\extensions\fastfx'; Admin=$false },
+            @{ Name="Surveillance"; Src="surveillance_contents"; Dest='%APPDATA%\Adobe\CEP\extensions\Surveillance'; Admin=$false },
+            @{ Name="Terminal"; Src="terminal_contents"; Dest='%APPDATA%\Adobe\CEP\extensions\com.example.terminal.panel'; Admin=$false }
           )
           
-          New-Item -ItemType Directory -Force -Path installers
-          
           foreach ($p in $plugins) {
-            if (-not (Test-Path $p.Source)) { Write-Host "SKIP: $($p.Name) source not found"; continue }
+            if (-not (Test-Path $p.Src)) { Write-Host "SKIP $($p.Name): $($p.Src) not found"; continue }
+            $stageDir = "output\$($p.Name)"
+            New-Item -ItemType Directory -Force -Path "$stageDir\plugin_files"
+            Get-ChildItem -Path $p.Src | Copy-Item -Destination "$stageDir\plugin_files" -Recurse -Force
             
-            $zipDir = "installers\$($p.Name)-Win"
-            New-Item -ItemType Directory -Force -Path $zipDir
+            @"
+@echo off
+echo ========================================
+echo   Installing $($p.Name)
+echo ========================================
+echo.
+set "DEST=$($p.Dest)"
+call set "DEST=%DEST%"
+if not exist "%DEST%" mkdir "%DEST%"
+xcopy /E /Y /Q "%~dp0plugin_files\*" "%DEST%\"
+echo.
+echo $($p.Name) installed successfully!
+echo Please restart your Adobe application.
+echo.
+pause
+"@ | Set-Content -Path "$stageDir\Install $($p.Name).bat" -Encoding ASCII
             
-            # Copy plugin files
-            Copy-Item -Path "$($p.Source)\*" -Destination "$zipDir\plugin\" -Recurse -Force
-            
-            # Create install script
-            $installScript = @"
-          @echo off
-          echo Installing $($p.Name)...
-          set "TARGET=$($p.Target)"
-          if not exist "%TARGET%" mkdir "%TARGET%"
-          xcopy /E /Y /Q "plugin\*" "%TARGET%\"
-          echo.
-          echo $($p.Name) installed successfully!
-          echo Please restart your Adobe application.
-          pause
-          "@
-            Set-Content -Path "$zipDir\Install $($p.Name).bat" -Value $installScript
-            
-            # Create uninstall script
-            $uninstallScript = @"
-          @echo off
-          echo Uninstalling $($p.Name)...
-          rmdir /S /Q "$($p.Target)"
-          echo $($p.Name) uninstalled.
-          pause
-          "@
-            Set-Content -Path "$zipDir\Uninstall $($p.Name).bat" -Value $uninstallScript
-            
-            # Zip it
-            Compress-Archive -Path "$zipDir\*" -DestinationPath "installers\$($p.Name)-Win-Installer.zip" -Force
-            Write-Host "Built: $($p.Name)-Win-Installer.zip"
+            Compress-Archive -Path "$stageDir\*" -DestinationPath "output\$($p.Name)-Win-Installer.zip" -Force
+            Write-Host "Built: $($p.Name)-Win-Installer.zip ($('{0:N1}' -f ((Get-Item "output\$($p.Name)-Win-Installer.zip").Length / 1MB)) MB)"
           }
           
           # TrackerLabs AE
-          $aex = Get-ChildItem -Path "trackerlabs-ae" -Filter "*.aex" -Recurse | Select-Object -First 1
+          $aex = Get-ChildItem -Path "trackerlabs" -Filter "*.aex" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if ($aex) {
-            $zipDir = "installers\TrackerLabs-AE-Win"
-            New-Item -ItemType Directory -Force -Path "$zipDir\plugin"
-            Copy-Item $aex.FullName -Destination "$zipDir\plugin\TrackerLabs.aex"
-            $installScript = @"
-          @echo off
-          echo Installing TrackerLabs for After Effects...
-          echo This requires administrator privileges.
-          set "TARGET=%ProgramFiles%\Adobe\Common\Plug-ins\7.0\MediaCore\TrackerLabs"
-          if not exist "%TARGET%" mkdir "%TARGET%"
-          copy /Y "plugin\TrackerLabs.aex" "%TARGET%\TrackerLabs.aex"
-          echo.
-          echo TrackerLabs installed successfully!
-          echo Please restart After Effects.
-          pause
-          "@
-            Set-Content -Path "$zipDir\Install TrackerLabs AE.bat" -Value $installScript
-            Compress-Archive -Path "$zipDir\*" -DestinationPath "installers\TrackerLabs-AE-Win-Installer.zip" -Force
+            $stageDir = "output\TrackerLabs-AE"
+            New-Item -ItemType Directory -Force -Path "$stageDir\plugin_files"
+            Copy-Item $aex.FullName -Destination "$stageDir\plugin_files\TrackerLabs.aex"
+            @"
+@echo off
+echo ========================================
+echo   Installing TrackerLabs for After Effects
+echo   (Requires Administrator)
+echo ========================================
+echo.
+set "DEST=%ProgramFiles%\Adobe\Common\Plug-ins\7.0\MediaCore\TrackerLabs"
+if not exist "%DEST%" mkdir "%DEST%"
+copy /Y "%~dp0plugin_files\TrackerLabs.aex" "%DEST%\TrackerLabs.aex"
+echo.
+echo TrackerLabs for After Effects installed!
+echo Please restart After Effects.
+echo.
+pause
+"@ | Set-Content -Path "$stageDir\Install TrackerLabs AE (Run as Admin).bat" -Encoding ASCII
+            Compress-Archive -Path "$stageDir\*" -DestinationPath "output\TrackerLabs-AE-Win-Installer.zip" -Force
             Write-Host "Built: TrackerLabs-AE-Win-Installer.zip"
           }
           
           # TrackerLabs Resolve
-          if (Test-Path "trackerlabs-resolve\contents") {
-            $zipDir = "installers\TrackerLabs-Resolve-Win"
-            New-Item -ItemType Directory -Force -Path "$zipDir\plugin"
-            Copy-Item -Path "trackerlabs-resolve\contents\*" -Destination "$zipDir\plugin\" -Recurse -Force
-            $installScript = @"
-          @echo off
-          echo Installing TrackerLabs for DaVinci Resolve...
-          echo This requires administrator privileges.
-          set "TARGET=%ProgramFiles%\Common Files\OFX\Plugins\TrackerLabsPlugin.ofx.bundle"
-          if not exist "%TARGET%" mkdir "%TARGET%"
-          xcopy /E /Y /Q "plugin\*" "%TARGET%\"
-          echo.
-          echo TrackerLabs for Resolve installed successfully!
-          echo Please restart DaVinci Resolve.
-          pause
-          "@
-            Set-Content -Path "$zipDir\Install TrackerLabs Resolve.bat" -Value $installScript
-            Compress-Archive -Path "$zipDir\*" -DestinationPath "installers\TrackerLabs-Resolve-Win-Installer.zip" -Force
+          if (Test-Path "trackerlabs_resolve") {
+            $stageDir = "output\TrackerLabs-Resolve"
+            New-Item -ItemType Directory -Force -Path "$stageDir\plugin_files"
+            Get-ChildItem -Path "trackerlabs_resolve" | Copy-Item -Destination "$stageDir\plugin_files" -Recurse -Force
+            @"
+@echo off
+echo ========================================
+echo   Installing TrackerLabs for DaVinci Resolve
+echo   (Requires Administrator)
+echo ========================================
+echo.
+set "DEST=%ProgramFiles%\Common Files\OFX\Plugins\TrackerLabsPlugin.ofx.bundle"
+if not exist "%DEST%" mkdir "%DEST%"
+xcopy /E /Y /Q "%~dp0plugin_files\*" "%DEST%\"
+echo.
+echo TrackerLabs for DaVinci Resolve installed!
+echo Please restart DaVinci Resolve.
+echo.
+pause
+"@ | Set-Content -Path "$stageDir\Install TrackerLabs Resolve (Run as Admin).bat" -Encoding ASCII
+            Compress-Archive -Path "$stageDir\*" -DestinationPath "output\TrackerLabs-Resolve-Win-Installer.zip" -Force
             Write-Host "Built: TrackerLabs-Resolve-Win-Installer.zip"
           }
           
           Write-Host "`n=== All installers ==="
-          Get-ChildItem installers -Filter "*.zip" | ForEach-Object { Write-Host "  $($_.Name) ($([math]::Round($_.Length/1MB, 1)) MB)" }
+          Get-ChildItem output -Filter "*.zip" | ForEach-Object { Write-Host "  $($_.Name) ($('{0:N1}' -f ($_.Length / 1MB)) MB)" }
         shell: pwsh
 
       - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installers
-          path: "installers/*.zip"
+          name: windows-zip-installers
+          path: "output/*.zip"
           if-no-files-found: error
