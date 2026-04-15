@@ -18,9 +18,8 @@ jobs:
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Create output directory and Adobe plugin dir
+      - name: Create Adobe plugin directory
         run: |
-          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\ae-build-output"
           New-Item -ItemType Directory -Force -Path "C:\Program Files\Adobe\Common\Plug-ins\7.0\MediaCore\TrackerLabs"
         shell: pwsh
 
@@ -34,23 +33,15 @@ jobs:
             /v:minimal
         shell: pwsh
 
-      - name: Locate .aex output
+      - name: Locate and upload .aex
         run: |
-          # Search everywhere for the .aex
-          $aex = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*.aex" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $aex) {
-            # Also check the Adobe path
-            $aex = Get-ChildItem -Path "C:\Program Files\Adobe" -Filter "*.aex" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          }
-          if (-not $aex) {
-            Write-Error "No .aex file found anywhere"
-            exit 1
-          }
+          $aex = Get-ChildItem -Path @("$env:GITHUB_WORKSPACE", "C:\Program Files\Adobe") -Filter "*.aex" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          if (-not $aex) { Write-Error "No .aex found"; exit 1 }
           Write-Host "Found: $($aex.FullName)"
           Copy-Item $aex.FullName -Destination "$env:GITHUB_WORKSPACE\TrackerLabs.aex"
         shell: pwsh
 
-      - name: Upload TrackerLabs.aex artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerLabs-AE-Windows-x64
@@ -68,30 +59,27 @@ jobs:
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Install OpenCL SDK
+      - name: Install OpenCL SDK from Khronos
         run: |
-          # Download OpenCL ICD Loader from Khronos
           $oclDir = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win\TrackerLabsResolvePlugin\opencl"
           New-Item -ItemType Directory -Force -Path "$oclDir\lib\x64"
           
-          # Download the OpenCL SDK from vcpkg/nuget
-          nuget install OpenCL -Version 2.2.0 -OutputDirectory "$env:TEMP\opencl-sdk"
+          # Download OpenCL SDK from Khronos GitHub
+          $sdkUrl = "https://github.com/KhronosGroup/OpenCL-SDK/releases/download/v2024.05.08/OpenCL-SDK-v2024.05.08-Win-x64.zip"
+          $zipPath = "$env:TEMP\opencl-sdk.zip"
+          Invoke-WebRequest -Uri $sdkUrl -OutFile $zipPath
+          Expand-Archive -Path $zipPath -DestinationPath "$env:TEMP\opencl-sdk"
           
-          # Find the lib file
-          $lib = Get-ChildItem -Path "$env:TEMP\opencl-sdk" -Filter "OpenCL.lib" -Recurse | Where-Object { $_.FullName -match "x64" } | Select-Object -First 1
+          # Find and copy OpenCL.lib
+          $lib = Get-ChildItem -Path "$env:TEMP\opencl-sdk" -Filter "OpenCL.lib" -Recurse | Select-Object -First 1
           if ($lib) {
             Copy-Item $lib.FullName -Destination "$oclDir\lib\x64\OpenCL.lib"
-            Write-Host "OpenCL.lib installed at: $oclDir\lib\x64\OpenCL.lib"
+            Write-Host "Installed: $oclDir\lib\x64\OpenCL.lib"
           } else {
-            # Fallback: use the Windows SDK's OpenCL.lib
-            $sdkLib = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\Lib" -Filter "OpenCL.lib" -Recurse | Where-Object { $_.FullName -match "x64" } | Select-Object -First 1
-            if ($sdkLib) {
-              Copy-Item $sdkLib.FullName -Destination "$oclDir\lib\x64\OpenCL.lib"
-              Write-Host "OpenCL.lib from Windows SDK: $($sdkLib.FullName)"
-            } else {
-              Write-Error "Could not find OpenCL.lib anywhere"
-              exit 1
-            }
+            Write-Host "OpenCL SDK lib files:"
+            Get-ChildItem -Path "$env:TEMP\opencl-sdk" -Filter "*.lib" -Recurse | ForEach-Object { Write-Host $_.FullName }
+            Write-Error "OpenCL.lib not found in SDK download"
+            exit 1
           }
         shell: pwsh
 
@@ -105,12 +93,10 @@ jobs:
             /v:minimal
         shell: pwsh
 
-      - name: Locate .ofx output
+      - name: Locate and upload output
         run: |
-          $searchRoot = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win"
-          # Look for the .ofx binary or .ofx.bundle directory
-          $ofx = Get-ChildItem -Path $searchRoot -Filter "*.ofx" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          $bundle = Get-ChildItem -Path $searchRoot -Filter "*.ofx.bundle" -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          $ofx = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*.ofx" -File -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -notmatch "\.h$" } | Select-Object -First 1
+          $bundle = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*.ofx.bundle" -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           
           if ($bundle) {
             Write-Host "Found bundle: $($bundle.FullName)"
@@ -119,15 +105,8 @@ jobs:
             Write-Host "Found OFX: $($ofx.FullName)"
             Add-Content -Path $env:GITHUB_ENV -Value "OFX_PATH=$($ofx.FullName)"
           } else {
-            # Search entire workspace
-            $ofx = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*.ofx" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-            if ($ofx) {
-              Write-Host "Found OFX in workspace: $($ofx.FullName)"
-              Add-Content -Path $env:GITHUB_ENV -Value "OFX_PATH=$($ofx.FullName)"
-            } else {
-              Write-Error "No .ofx or .ofx.bundle found"
-              exit 1
-            }
+            Write-Error "No .ofx output found"
+            exit 1
           }
         shell: pwsh
 
