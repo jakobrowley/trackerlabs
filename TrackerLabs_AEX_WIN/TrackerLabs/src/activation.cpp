@@ -215,8 +215,8 @@ int useVerifyOnline(const char* license,bool activate)
     {
         char url[1024];
 
-        if(activate) sprintf(url, "/wp-json/lmfwc/v2/licenses/activate/%s", license);
-        else sprintf(url, "/wp-json/lmfwc/v2/licenses/validate/%s", license);
+        if(activate) sprintf(url, "/api/tt/lmfwc/v2/licenses/activate/%s", license);
+        else sprintf(url, "/api/tt/lmfwc/v2/licenses/validate/%s", license);
 
 
         if (client.Request(url, W3Client::reqGet))
