@@ -18,8 +18,10 @@ jobs:
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Create AE build output directory
-        run: New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\ae-build-output"
+      - name: Create output directory and Adobe plugin dir
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\ae-build-output"
+          New-Item -ItemType Directory -Force -Path "C:\Program Files\Adobe\Common\Plug-ins\7.0\MediaCore\TrackerLabs"
         shell: pwsh
 
       - name: Build TrackerLabs AE plugin
@@ -28,27 +30,31 @@ jobs:
             "$env:GITHUB_WORKSPACE\TrackerLabs_AEX_WIN\TrackerLabs\src\Win\TrackerLabs.sln" `
             /p:Configuration=Release `
             /p:Platform=x64 `
-            /p:AE_PLUGIN_BUILD_DIR="$env:GITHUB_WORKSPACE\ae-build-output" `
             /m `
             /v:minimal
         shell: pwsh
 
       - name: Locate .aex output
         run: |
-          $aex = Get-ChildItem -Path "$env:GITHUB_WORKSPACE\ae-build-output" -Filter "*.aex" -Recurse | Select-Object -First 1
+          # Search everywhere for the .aex
+          $aex = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*.aex" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           if (-not $aex) {
-            Write-Error "No .aex file found in build output directory"
+            # Also check the Adobe path
+            $aex = Get-ChildItem -Path "C:\Program Files\Adobe" -Filter "*.aex" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+          }
+          if (-not $aex) {
+            Write-Error "No .aex file found anywhere"
             exit 1
           }
           Write-Host "Found: $($aex.FullName)"
-          Add-Content -Path $env:GITHUB_ENV -Value "AEX_PATH=$($aex.FullName)"
+          Copy-Item $aex.FullName -Destination "$env:GITHUB_WORKSPACE\TrackerLabs.aex"
         shell: pwsh
 
       - name: Upload TrackerLabs.aex artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerLabs-AE-Windows-x64
-          path: ${{ env.AEX_PATH }}
+          path: TrackerLabs.aex
           if-no-files-found: error
 
   build-resolve-windows:
@@ -62,26 +68,31 @@ jobs:
       - name: Set up MSBuild
         uses: microsoft/setup-msbuild@v2
 
-      - name: Locate CUDA toolkit and set env vars
+      - name: Install OpenCL SDK
         run: |
-          $cudaPath = $env:CUDA_PATH
-          if (-not $cudaPath) {
-            $candidates = Get-Item "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v*" -ErrorAction SilentlyContinue
-            if ($candidates) {
-              $cudaPath = ($candidates | Sort-Object Name | Select-Object -Last 1).FullName
+          # Download OpenCL ICD Loader from Khronos
+          $oclDir = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win\TrackerLabsResolvePlugin\opencl"
+          New-Item -ItemType Directory -Force -Path "$oclDir\lib\x64"
+          
+          # Download the OpenCL SDK from vcpkg/nuget
+          nuget install OpenCL -Version 2.2.0 -OutputDirectory "$env:TEMP\opencl-sdk"
+          
+          # Find the lib file
+          $lib = Get-ChildItem -Path "$env:TEMP\opencl-sdk" -Filter "OpenCL.lib" -Recurse | Where-Object { $_.FullName -match "x64" } | Select-Object -First 1
+          if ($lib) {
+            Copy-Item $lib.FullName -Destination "$oclDir\lib\x64\OpenCL.lib"
+            Write-Host "OpenCL.lib installed at: $oclDir\lib\x64\OpenCL.lib"
+          } else {
+            # Fallback: use the Windows SDK's OpenCL.lib
+            $sdkLib = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\Lib" -Filter "OpenCL.lib" -Recurse | Where-Object { $_.FullName -match "x64" } | Select-Object -First 1
+            if ($sdkLib) {
+              Copy-Item $sdkLib.FullName -Destination "$oclDir\lib\x64\OpenCL.lib"
+              Write-Host "OpenCL.lib from Windows SDK: $($sdkLib.FullName)"
+            } else {
+              Write-Error "Could not find OpenCL.lib anywhere"
+              exit 1
             }
           }
-          if ($cudaPath) {
-            Write-Host "CUDA found at: $cudaPath"
-            Add-Content -Path $env:GITHUB_ENV -Value "CUDA_INC_PATH=$cudaPath\include"
-            Add-Content -Path $env:GITHUB_ENV -Value "CUDA_LIB_PATH=$cudaPath\lib\x64"
-          } else {
-            Write-Host "WARNING: CUDA not found — build may fail if CUDA compilation is required"
-          }
-          # Point AMDAPPSDKROOT to bundled opencl/ directory (inc/ and lib/ are present in source tree)
-          $oclRoot = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win\TrackerLabsResolvePlugin\opencl"
-          Write-Host "OpenCL root: $oclRoot"
-          Add-Content -Path $env:GITHUB_ENV -Value "AMDAPPSDKROOT=$oclRoot"
         shell: pwsh
 
       - name: Build TrackerLabs Resolve OFX plugin
@@ -94,21 +105,35 @@ jobs:
             /v:minimal
         shell: pwsh
 
-      - name: Locate .ofx.bundle output
+      - name: Locate .ofx output
         run: |
           $searchRoot = "$env:GITHUB_WORKSPACE\TrackerLabsResolvePlugin_Win"
+          # Look for the .ofx binary or .ofx.bundle directory
+          $ofx = Get-ChildItem -Path $searchRoot -Filter "*.ofx" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
           $bundle = Get-ChildItem -Path $searchRoot -Filter "*.ofx.bundle" -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
-          if (-not $bundle) {
-            Write-Error "No .ofx.bundle directory found under $searchRoot"
-            exit 1
+          
+          if ($bundle) {
+            Write-Host "Found bundle: $($bundle.FullName)"
+            Add-Content -Path $env:GITHUB_ENV -Value "OFX_PATH=$($bundle.FullName)"
+          } elseif ($ofx) {
+            Write-Host "Found OFX: $($ofx.FullName)"
+            Add-Content -Path $env:GITHUB_ENV -Value "OFX_PATH=$($ofx.FullName)"
+          } else {
+            # Search entire workspace
+            $ofx = Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*.ofx" -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($ofx) {
+              Write-Host "Found OFX in workspace: $($ofx.FullName)"
+              Add-Content -Path $env:GITHUB_ENV -Value "OFX_PATH=$($ofx.FullName)"
+            } else {
+              Write-Error "No .ofx or .ofx.bundle found"
+              exit 1
+            }
           }
-          Write-Host "Found bundle: $($bundle.FullName)"
-          Add-Content -Path $env:GITHUB_ENV -Value "OFX_BUNDLE_PATH=$($bundle.FullName)"
         shell: pwsh
 
-      - name: Upload TrackerLabsPlugin.ofx.bundle artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerLabs-Resolve-Windows-x64
-          path: ${{ env.OFX_BUNDLE_PATH }}
+          path: ${{ env.OFX_PATH }}
           if-no-files-found: error
