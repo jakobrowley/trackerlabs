@@ -1,0 +1,413 @@
+name: Build Windows Installers
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-installers:
+    name: Build Windows .exe Installers
+    runs-on: windows-latest
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Install NSIS
+        run: choco install nsis -y
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # FastFX
+      # -----------------------------------------------------------------------
+      - name: Download FastFX ZXP
+        run: |
+          gh release download v2.0.0-new-license `
+            --repo jakobrowley/fastfx `
+            --pattern "fastfx-*.zxp" `
+            --dir "$env:GITHUB_WORKSPACE\fastfx-download"
+        shell: pwsh
+
+      - name: Unpack FastFX ZXP
+        run: |
+          $zxp = Get-ChildItem "$env:GITHUB_WORKSPACE\fastfx-download" -Filter "*.zxp" | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\fastfx\plugin_contents"
+          Expand-Archive -Path $zxp.FullName -DestinationPath "$env:GITHUB_WORKSPACE\fastfx\plugin_contents" -Force
+        shell: pwsh
+
+      - name: Create FastFX NSIS script
+        run: |
+          Set-Content -Path "$env:GITHUB_WORKSPACE\fastfx\fastfx.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "FastFX"
+          OutFile "FastFX-Win-Setup.exe"
+          InstallDir "$APPDATA\Adobe\CEP\extensions\fastfx"
+          RequestExecutionLevel user
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File /r "plugin_contents\*.*"
+            WriteUninstaller "$INSTDIR\Uninstall-FastFX.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall FastFX.lnk" "$INSTDIR\Uninstall-FastFX.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall FastFX.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile FastFX installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\fastfx"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" fastfx.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # Surveillance
+      # -----------------------------------------------------------------------
+      - name: Download Surveillance ZXP
+        run: |
+          gh release download v1.0.0-new-license `
+            --repo jakobrowley/surveillance `
+            --pattern "surveillance-*.zxp" `
+            --dir "$env:GITHUB_WORKSPACE\surveillance-download"
+        shell: pwsh
+
+      - name: Unpack Surveillance ZXP
+        run: |
+          $zxp = Get-ChildItem "$env:GITHUB_WORKSPACE\surveillance-download" -Filter "*.zxp" | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\surveillance\plugin_contents"
+          Expand-Archive -Path $zxp.FullName -DestinationPath "$env:GITHUB_WORKSPACE\surveillance\plugin_contents" -Force
+        shell: pwsh
+
+      - name: Create Surveillance NSIS script
+        run: |
+          Set-Content -Path "$env:GITHUB_WORKSPACE\surveillance\surveillance.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "Surveillance"
+          OutFile "Surveillance-Win-Setup.exe"
+          InstallDir "$APPDATA\Adobe\CEP\extensions\com.surveillance"
+          RequestExecutionLevel user
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File /r "plugin_contents\*.*"
+            WriteUninstaller "$INSTDIR\Uninstall-Surveillance.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall Surveillance.lnk" "$INSTDIR\Uninstall-Surveillance.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall Surveillance.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile Surveillance installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\surveillance"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" surveillance.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # Terminal
+      # -----------------------------------------------------------------------
+      - name: Download Terminal ZXP
+        run: |
+          gh release download v1.0.0-new-license `
+            --repo jakobrowley/terminal `
+            --pattern "terminal-*.zxp" `
+            --dir "$env:GITHUB_WORKSPACE\terminal-download"
+        shell: pwsh
+
+      - name: Unpack Terminal ZXP
+        run: |
+          $zxp = Get-ChildItem "$env:GITHUB_WORKSPACE\terminal-download" -Filter "*.zxp" | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\terminal\plugin_contents"
+          Expand-Archive -Path $zxp.FullName -DestinationPath "$env:GITHUB_WORKSPACE\terminal\plugin_contents" -Force
+        shell: pwsh
+
+      - name: Create Terminal NSIS script
+        run: |
+          Set-Content -Path "$env:GITHUB_WORKSPACE\terminal\terminal.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "Terminal"
+          OutFile "Terminal-Win-Setup.exe"
+          InstallDir "$APPDATA\Adobe\CEP\extensions\com.example.terminal.panel"
+          RequestExecutionLevel user
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File /r "plugin_contents\*.*"
+            WriteUninstaller "$INSTDIR\Uninstall-Terminal.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall Terminal.lnk" "$INSTDIR\Uninstall-Terminal.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall Terminal.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile Terminal installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\terminal"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" terminal.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # MotionBlur
+      # -----------------------------------------------------------------------
+      - name: Download MotionBlur ZXP
+        run: |
+          gh release download v1.0.0-new-license `
+            --repo jakobrowley/motionblur `
+            --pattern "motionblur-*.zxp" `
+            --dir "$env:GITHUB_WORKSPACE\motionblur-download"
+        shell: pwsh
+
+      - name: Unpack MotionBlur ZXP
+        run: |
+          $zxp = Get-ChildItem "$env:GITHUB_WORKSPACE\motionblur-download" -Filter "*.zxp" | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\motionblur\plugin_contents"
+          Expand-Archive -Path $zxp.FullName -DestinationPath "$env:GITHUB_WORKSPACE\motionblur\plugin_contents" -Force
+        shell: pwsh
+
+      - name: Create MotionBlur NSIS script
+        run: |
+          Set-Content -Path "$env:GITHUB_WORKSPACE\motionblur\motionblur.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "MotionBlur"
+          OutFile "MotionBlur-Win-Setup.exe"
+          InstallDir "$APPDATA\Adobe\CEP\extensions\com.tinytapes.motionblur"
+          RequestExecutionLevel user
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File /r "plugin_contents\*.*"
+            WriteUninstaller "$INSTDIR\Uninstall-MotionBlur.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall MotionBlur.lnk" "$INSTDIR\Uninstall-MotionBlur.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall MotionBlur.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile MotionBlur installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\motionblur"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" motionblur.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # SlowMotion
+      # -----------------------------------------------------------------------
+      - name: Download SlowMotion ZXP
+        run: |
+          gh release download v1.0.0-new-license `
+            --repo jakobrowley/slowmotion `
+            --pattern "slowmotion-*.zxp" `
+            --dir "$env:GITHUB_WORKSPACE\slowmotion-download"
+        shell: pwsh
+
+      - name: Unpack SlowMotion ZXP
+        run: |
+          $zxp = Get-ChildItem "$env:GITHUB_WORKSPACE\slowmotion-download" -Filter "*.zxp" | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\slowmotion\plugin_contents"
+          Expand-Archive -Path $zxp.FullName -DestinationPath "$env:GITHUB_WORKSPACE\slowmotion\plugin_contents" -Force
+        shell: pwsh
+
+      - name: Create SlowMotion NSIS script
+        run: |
+          Set-Content -Path "$env:GITHUB_WORKSPACE\slowmotion\slowmotion.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "SlowMotion"
+          OutFile "SlowMotion-Win-Setup.exe"
+          InstallDir "$APPDATA\Adobe\CEP\extensions\com.tinytapes.TimeRevamp"
+          RequestExecutionLevel user
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File /r "plugin_contents\*.*"
+            WriteUninstaller "$INSTDIR\Uninstall-SlowMotion.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall SlowMotion.lnk" "$INSTDIR\Uninstall-SlowMotion.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall SlowMotion.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile SlowMotion installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\slowmotion"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" slowmotion.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # TrackerLabs AE (needs admin - Program Files)
+      # -----------------------------------------------------------------------
+      - name: Download TrackerLabs AE (.aex)
+        run: |
+          gh release download v1.0.0-new-license `
+            --repo jakobrowley/trackerlabs `
+            --pattern "TrackerLabs.aex" `
+            --dir "$env:GITHUB_WORKSPACE\trackerlabs-ae-download"
+        shell: pwsh
+
+      - name: Create TrackerLabs AE NSIS script
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\trackerlabs-ae"
+          Copy-Item "$env:GITHUB_WORKSPACE\trackerlabs-ae-download\TrackerLabs.aex" `
+                    "$env:GITHUB_WORKSPACE\trackerlabs-ae\TrackerLabs.aex"
+          Set-Content -Path "$env:GITHUB_WORKSPACE\trackerlabs-ae\trackerlabs-ae.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "TrackerLabs for After Effects"
+          OutFile "TrackerLabs-AE-Win-Setup.exe"
+          InstallDir "$PROGRAMFILES\Adobe\Common\Plug-ins\7.0\MediaCore\TrackerLabs"
+          RequestExecutionLevel admin
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File "TrackerLabs.aex"
+            WriteUninstaller "$INSTDIR\Uninstall-TrackerLabsAE.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall TrackerLabs AE.lnk" "$INSTDIR\Uninstall-TrackerLabsAE.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            Delete "$INSTDIR\TrackerLabs.aex"
+            Delete "$INSTDIR\Uninstall-TrackerLabsAE.exe"
+            RMDir "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall TrackerLabs AE.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile TrackerLabs AE installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\trackerlabs-ae"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" trackerlabs-ae.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # TrackerLabs Resolve (needs admin - Program Files Common)
+      # -----------------------------------------------------------------------
+      - name: Download TrackerLabs Resolve Win zip
+        run: |
+          gh release download v1.0.0-new-license `
+            --repo jakobrowley/trackerlabs `
+            --pattern "TrackerLabs-Resolve-Win.zip" `
+            --dir "$env:GITHUB_WORKSPACE\trackerlabs-resolve-download"
+        shell: pwsh
+
+      - name: Unpack TrackerLabs Resolve zip
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\trackerlabs-resolve\bundle_contents"
+          Expand-Archive `
+            -Path "$env:GITHUB_WORKSPACE\trackerlabs-resolve-download\TrackerLabs-Resolve-Win.zip" `
+            -DestinationPath "$env:GITHUB_WORKSPACE\trackerlabs-resolve\bundle_contents" `
+            -Force
+        shell: pwsh
+
+      - name: Create TrackerLabs Resolve NSIS script
+        run: |
+          Set-Content -Path "$env:GITHUB_WORKSPACE\trackerlabs-resolve\trackerlabs-resolve.nsi" -Value @'
+          !include "MUI2.nsh"
+
+          Name "TrackerLabs for DaVinci Resolve"
+          OutFile "TrackerLabs-Resolve-Win-Setup.exe"
+          InstallDir "$COMMONFILES\OFX\Plugins\TrackerLabsPlugin.ofx.bundle"
+          RequestExecutionLevel admin
+
+          !insertmacro MUI_PAGE_WELCOME
+          !insertmacro MUI_PAGE_INSTFILES
+          !insertmacro MUI_PAGE_FINISH
+          !insertmacro MUI_LANGUAGE "English"
+
+          Section "Install"
+            SetOutPath $INSTDIR
+            File /r "bundle_contents\*.*"
+            WriteUninstaller "$INSTDIR\Uninstall-TrackerLabsResolve.exe"
+            CreateDirectory "$SMPROGRAMS\Tiny Tapes"
+            CreateShortcut "$SMPROGRAMS\Tiny Tapes\Uninstall TrackerLabs Resolve.lnk" "$INSTDIR\Uninstall-TrackerLabsResolve.exe"
+          SectionEnd
+
+          Section "Uninstall"
+            RMDir /r "$INSTDIR"
+            Delete "$SMPROGRAMS\Tiny Tapes\Uninstall TrackerLabs Resolve.lnk"
+          SectionEnd
+          '@
+        shell: pwsh
+
+      - name: Compile TrackerLabs Resolve installer
+        run: |
+          Set-Location "$env:GITHUB_WORKSPACE\trackerlabs-resolve"
+          & "C:\Program Files (x86)\NSIS\makensis.exe" trackerlabs-resolve.nsi
+        shell: pwsh
+
+      # -----------------------------------------------------------------------
+      # Collect and upload all installers
+      # -----------------------------------------------------------------------
+      - name: Collect all installers
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\installers"
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*-Setup.exe" -Recurse |
+            Copy-Item -Destination "$env:GITHUB_WORKSPACE\installers"
+          Write-Host "Collected installers:"
+          Get-ChildItem "$env:GITHUB_WORKSPACE\installers" | ForEach-Object { Write-Host "  $($_.Name)" }
+        shell: pwsh
+
+      - name: Upload all installers as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: installers\*.exe
+          if-no-files-found: error
