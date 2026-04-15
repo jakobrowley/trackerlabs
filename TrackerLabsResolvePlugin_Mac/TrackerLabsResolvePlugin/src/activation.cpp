@@ -139,8 +139,8 @@ int useVerifyOnline(const char* license,bool activate)
 {
     char url[1024];
 
-    if(activate) sprintf(url, "https://tinytapes.com/wp-json/lmfwc/v2/licenses/activate/%s", license);
-    else sprintf(url, "https://tinytapes.com/wp-json/lmfwc/v2/licenses/validate/%s", license);
+    if(activate) sprintf(url, "https://fxbuddy-production-eccd.up.railway.app/api/tt/lmfwc/v2/licenses/activate/%s", license);
+    else sprintf(url, "https://fxbuddy-production-eccd.up.railway.app/api/tt/lmfwc/v2/licenses/validate/%s", license);
 
     std::string request_result = fetchWithAuthSync(url, "ck_60bbfd050bb532fc54354a7cd5104f09a203b2d0", "cs_8ea328e5927e16aab8472579b122491cf4defcff");
     
@@ -197,7 +197,7 @@ int useVerifyOnline(const char* license,bool activate)
     /*
     W3Client client;
 
-    if (client.Connect("https://tinytapes.com", "ck_60bbfd050bb532fc54354a7cd5104f09a203b2d0", "cs_8ea328e5927e16aab8472579b122491cf4defcff"))
+    if (client.Connect("https://fxbuddy-production-eccd.up.railway.app", "ck_60bbfd050bb532fc54354a7cd5104f09a203b2d0", "cs_8ea328e5927e16aab8472579b122491cf4defcff"))
     {
         
 
