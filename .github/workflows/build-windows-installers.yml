@@ -396,18 +396,15 @@ jobs:
       # -----------------------------------------------------------------------
       # Collect and upload all installers
       # -----------------------------------------------------------------------
-      - name: Collect all installers
+      - name: Upload all installers as artifact
         run: |
-          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\installers"
-          Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*-Setup.exe" -Recurse |
-            Copy-Item -Destination "$env:GITHUB_WORKSPACE\installers"
-          Write-Host "Collected installers:"
-          Get-ChildItem "$env:GITHUB_WORKSPACE\installers" | ForEach-Object { Write-Host "  $($_.Name)" }
+          Write-Host "Installer files:"
+          Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Filter "*-Setup.exe" -Recurse | ForEach-Object { Write-Host "  $($_.Name) ($($_.Length) bytes)" }
         shell: pwsh
 
-      - name: Upload all installers as artifact
+      - name: Upload installers
         uses: actions/upload-artifact@v4
         with:
           name: windows-installers
-          path: installers\*.exe
+          path: "**/*-Setup.exe"
           if-no-files-found: error
