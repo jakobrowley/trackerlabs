@@ -197,7 +197,7 @@ int useVerifyOnline(const char* license,bool activate)
     /*
     W3Client client;
 
-    if (client.Connect("https://fxbuddy-production-eccd.up.railway.app", "ck_60bbfd050bb532fc54354a7cd5104f09a203b2d0", "cs_8ea328e5927e16aab8472579b122491cf4defcff"))
+    if (client.Connect("https://fxbuddy-production-eccd.up.railway.app", "", ""))
     {
         
 
