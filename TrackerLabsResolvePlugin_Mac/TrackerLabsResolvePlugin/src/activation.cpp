@@ -142,7 +142,7 @@ int useVerifyOnline(const char* license,bool activate)
     if(activate) sprintf(url, "https://fxbuddy-production-eccd.up.railway.app/api/tt/lmfwc/v2/licenses/activate/%s", license);
     else sprintf(url, "https://fxbuddy-production-eccd.up.railway.app/api/tt/lmfwc/v2/licenses/validate/%s", license);
 
-    std::string request_result = fetchWithAuthSync(url, "ck_60bbfd050bb532fc54354a7cd5104f09a203b2d0", "cs_8ea328e5927e16aab8472579b122491cf4defcff");
+    std::string request_result = fetchWithAuthSync(url, "", "");
     
     
     std::map<std::string, std::string> obj = parse_json_license(request_result,'"');
